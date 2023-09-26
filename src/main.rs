@@ -22,6 +22,8 @@ enum Commands {
 fn main() {
     let cli = Cli::parse();
 
+    let remote_client = vercel_cache_helper::get_remote_client("".to_string(), None, "".to_string());
+
     match &cli.command {
         Some(Commands::Download { path }) => {
             if let Some(location) = path {

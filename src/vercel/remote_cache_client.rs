@@ -1,5 +1,5 @@
 #[derive(Debug)]
-pub(crate) struct RemoteClient {
+pub struct RemoteClient {
     token: String,
     team_id: Option<String>,
     user_agent: String,

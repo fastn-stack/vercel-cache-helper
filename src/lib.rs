@@ -1,6 +1,6 @@
 extern crate self as vercel_cache_helper;
 
-use std::convert::From; // Import From trait for conversion
+use std::convert::From;
 
 #[derive(Debug)]
 pub enum Error {
@@ -21,7 +21,6 @@ impl std::fmt::Display for Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-// Implement the From trait for conversion to your custom error type
 impl From<std::io::Error> for Error {
     fn from(io_error: std::io::Error) -> Self {
         Error::FileNotFound(io_error.to_string())
@@ -34,5 +33,9 @@ impl From<reqwest::Error> for Error {
     }
 }
 
-mod vercel;
-mod commands;
+pub mod vercel;
+pub mod commands;
+
+pub fn get_remote_client(token: String, team_id: Option<String>, product: String) -> vercel::remote_cache_client::RemoteClient {
+    vercel::remote_cache_client::RemoteClient::new(token, team_id, product)
+}
