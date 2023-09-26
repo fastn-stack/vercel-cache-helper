@@ -22,7 +22,11 @@ enum Commands {
 fn main() {
     let cli = Cli::parse();
 
-    let remote_client = vercel_cache_helper::get_remote_client("".to_string(), None, "".to_string());
+    let token = std::env::var("VERCEL_TOKEN").expect("Vercel token not found");
+    let team_id = std::env::var("VERCEL_TEAM_ID").unwrap_or("".to_string());
+    let product = std::env::var("VERCEL_PRODUCT").expect("Vercel product name not found");
+
+    let remote_client = vercel_cache_helper::get_remote_client(token, Some(team_id), product);
 
     match &cli.command {
         Some(Commands::Download { path }) => {
