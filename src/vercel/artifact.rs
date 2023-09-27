@@ -4,7 +4,7 @@ pub struct ArtifactOptions {
 }
 
 trait RequestHeaders {
-    fn get_headers(&self, method: &str) -> reqwest::header::HeaderMap;
+    fn get_headers(&self, method: &str, content_len: Option<u64>) -> reqwest::header::HeaderMap;
 }
 
 // Define the base struct with common fields and behavior.
@@ -33,7 +33,7 @@ impl ArtifactBaseRequest {
 
 // Implement the trait for the base struct.
 impl RequestHeaders for ArtifactBaseRequest {
-    fn get_headers(&self, method: &str) -> reqwest::header::HeaderMap {
+    fn get_headers(&self, method: &str, content_len: Option<u64>) -> reqwest::header::HeaderMap {
         let mut headers = reqwest::header::HeaderMap::new();
 
         headers.insert(
@@ -49,8 +49,15 @@ impl RequestHeaders for ArtifactBaseRequest {
         if method == "PUT" {
             headers.insert(
                 reqwest::header::CONTENT_TYPE,
-                reqwest::header::HeaderValue::from_static("application/octet-stream"),
+                reqwest::header::HeaderValue::from_static("application/gzip"),
             );
+
+            if let Some(content_len) = content_len {
+                headers.insert(
+                    reqwest::header::CONTENT_LENGTH,
+                    reqwest::header::HeaderValue::from(content_len),
+                );
+            }
 
             if let Some(options) = &self.options {
                 if let Some(duration) = options.duration {
@@ -103,7 +110,7 @@ impl ArtifactPutRequest {
 
         let response = client
             .put(&self.0.url)
-            .headers(self.0.get_headers("PUT"))
+            .headers(self.0.get_headers("PUT", None))
             .body(body)
             .send()
             .await?;
@@ -111,12 +118,16 @@ impl ArtifactPutRequest {
         Ok(response)
     }
 
-    pub async fn buffer(&mut self, artifact: &mut [u8]) -> vercel_cache_helper::Result<reqwest::Response> {
+    pub async fn buffer(
+        &mut self,
+        artifact: &mut [u8],
+        content_len: u64
+    ) -> vercel_cache_helper::Result<reqwest::Response> {
         let client = reqwest::Client::new();
 
         let response = client
             .put(&self.0.url)
-            .headers(self.0.get_headers("PUT"))
+            .headers(self.0.get_headers("PUT", Some(content_len)))
             .body(artifact.to_owned())
             .send()
             .await?;
@@ -131,7 +142,7 @@ impl ArtifactGetRequest {
 
         let response = client
             .get(&self.0.url)
-            .headers(self.0.get_headers("GET"))
+            .headers(self.0.get_headers("GET", None))
             .send()
             .await?;
 
@@ -145,7 +156,7 @@ impl ArtifactExistsRequest {
 
         let response = client
             .head(&self.0.url)
-            .headers(self.0.get_headers("HEAD"))
+            .headers(self.0.get_headers("HEAD", None))
             .send()
             .await?;
 

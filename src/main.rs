@@ -9,17 +9,12 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    Download {
-        #[arg(short, long)]
-        path: Option<std::path::PathBuf>,
-    },
-    Upload {
-        #[arg(short, long)]
-        path: Option<std::path::PathBuf>,
-    },
+    Download {},
+    Upload {},
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let cli = Cli::parse();
 
     let token = std::env::var("VERCEL_TOKEN").expect("Vercel token not found");
@@ -28,13 +23,16 @@ fn main() {
 
     let remote_client = vercel_cache_helper::get_remote_client(token, Some(team_id), product);
 
-    match &cli.command {
-        Some(Commands::Download { path }) => {
-            if let Some(location) = path {
-                println!("{}", location.to_string_lossy());
-            }
+    let result_future: std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), vercel_cache_helper::Error>>>> = match &cli.command {
+        Some(Commands::Download {}) => {
+            Box::pin(vercel_cache_helper::commands::download::download(remote_client))
         }
-        Some(Commands::Upload { path }) => { }
-        None => {}
-    }
+        Some(Commands::Upload {}) => {
+            Box::pin(vercel_cache_helper::commands::upload::upload(remote_client))
+        }
+        None => Box::pin(async { Ok(()) }),
+    };
+
+    // Now you can await the result_future if necessary
+    let _ = result_future.await;
 }

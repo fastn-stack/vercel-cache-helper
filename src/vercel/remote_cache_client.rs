@@ -38,7 +38,8 @@ impl RemoteClient {
         &self,
         hash: String,
         options: Option<vercel_cache_helper::vercel::artifact::ArtifactOptions>,
-    ) -> vercel_cache_helper::Result<vercel_cache_helper::vercel::artifact::ArtifactGetRequest> {
+    ) -> vercel_cache_helper::Result<vercel_cache_helper::vercel::artifact::ArtifactGetRequest>
+    {
         Ok(vercel_cache_helper::vercel::artifact::ArtifactGetRequest(
             vercel_cache_helper::vercel::artifact::ArtifactBaseRequest::new(
                 self.token.to_string(),
@@ -53,7 +54,8 @@ impl RemoteClient {
         &self,
         hash: String,
         options: Option<vercel_cache_helper::vercel::artifact::ArtifactOptions>,
-    ) -> vercel_cache_helper::Result<vercel_cache_helper::vercel::artifact::ArtifactPutRequest> {
+    ) -> vercel_cache_helper::Result<vercel_cache_helper::vercel::artifact::ArtifactPutRequest>
+    {
         Ok(vercel_cache_helper::vercel::artifact::ArtifactPutRequest(
             vercel_cache_helper::vercel::artifact::ArtifactBaseRequest::new(
                 self.token.to_string(),
@@ -68,14 +70,17 @@ impl RemoteClient {
         &self,
         hash: String,
         options: Option<vercel_cache_helper::vercel::artifact::ArtifactOptions>,
-    ) -> vercel_cache_helper::Result<vercel_cache_helper::vercel::artifact::ArtifactExistsRequest> {
-        Ok(vercel_cache_helper::vercel::artifact::ArtifactExistsRequest(
-            vercel_cache_helper::vercel::artifact::ArtifactBaseRequest::new(
-                self.token.to_string(),
-                self.get_endpoint_url(hash)?.clone(),
-                self.user_agent.to_string(),
-                options,
+    ) -> vercel_cache_helper::Result<vercel_cache_helper::vercel::artifact::ArtifactExistsRequest>
+    {
+        Ok(
+            vercel_cache_helper::vercel::artifact::ArtifactExistsRequest(
+                vercel_cache_helper::vercel::artifact::ArtifactBaseRequest::new(
+                    self.token.to_string(),
+                    self.get_endpoint_url(hash)?.clone(),
+                    self.user_agent.to_string(),
+                    options,
+                ),
             ),
-        ))
+        )
     }
 }

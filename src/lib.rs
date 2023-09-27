@@ -33,9 +33,14 @@ impl From<reqwest::Error> for Error {
     }
 }
 
-pub mod vercel;
 pub mod commands;
+pub mod utils;
+pub mod vercel;
 
-pub fn get_remote_client(token: String, team_id: Option<String>, product: String) -> vercel::remote_cache_client::RemoteClient {
+pub fn get_remote_client(
+    token: String,
+    team_id: Option<String>,
+    product: String,
+) -> vercel::remote_cache_client::RemoteClient {
     vercel::remote_cache_client::RemoteClient::new(token, team_id, product)
 }
