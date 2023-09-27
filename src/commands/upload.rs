@@ -1,4 +1,4 @@
-use std::io::Read;
+use std::io::{Read, Seek};
 
 pub async fn upload(
     remote_client: vercel_cache_helper::vercel::remote_cache_client::RemoteClient,
@@ -26,17 +26,19 @@ pub async fn upload(
     vercel_cache_helper::utils::create_tar_gz_archive(&cache_dir, &cache_dir_archive)?;
     vercel_cache_helper::utils::create_tar_gz_archive(&build_dir, &build_dir_archive)?;
 
+    build_dir_archive.seek(std::io::SeekFrom::Start(0)).unwrap();
+    cache_dir_archive.seek(std::io::SeekFrom::Start(0)).unwrap();
+
     let mut build_archive_buf: Vec<u8> = Vec::new();
     let mut cache_archive_buf: Vec<u8> = Vec::new();
 
-    build_dir_archive.read_to_end(&mut build_archive_buf)?;
-    cache_dir_archive.read_to_end(&mut cache_archive_buf)?;
+    println!("{:?}", build_dir_archive.metadata());
 
-    let build_archive_size = build_dir_archive.metadata()?.len();
-    let cache_archive_size = cache_dir_archive.metadata()?.len();
+    let build_archive_size =  build_dir_archive.read_to_end(&mut build_archive_buf)?;
+    let cache_archive_size = cache_dir_archive.read_to_end(&mut cache_archive_buf)?;
 
-    println!("Build archive size: {} bytes", build_archive_size);
-    println!("Cache archive size: {} bytes", cache_archive_size);
+    println!("Build archive bytes read: {} bytes", build_archive_size);
+    println!("Cache archive bytes read: {} bytes", cache_archive_size);
 
     let build_archive_hash = vercel_cache_helper::utils::generate_hash(&build_archive_buf);
     let cache_dir_hash = vercel_cache_helper::utils::generate_hash(&cache_archive_buf);
