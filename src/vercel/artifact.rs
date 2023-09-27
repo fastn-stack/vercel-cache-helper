@@ -49,7 +49,7 @@ impl RequestHeaders for ArtifactBaseRequest {
         if method == "PUT" {
             headers.insert(
                 reqwest::header::CONTENT_TYPE,
-                reqwest::header::HeaderValue::from_static("application/gzip"),
+                reqwest::header::HeaderValue::from_static("application/octet-stream"),
             );
 
             if let Some(content_len) = content_len {

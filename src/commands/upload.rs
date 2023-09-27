@@ -45,9 +45,11 @@ pub async fn upload(
     println!("Cache dir hash: {:?}", cache_dir_hash);
 
     let mut build_put_req = remote_client.put(build_archive_hash, None)?;
+    println!("Uploading build");
     build_put_req.buffer(&mut build_archive_buf, build_archive_size).await?;
 
     let mut cache_put_req = remote_client.put(cache_dir_hash, None)?;
+    println!("Uploading Cache");
     let res = cache_put_req.buffer(&mut cache_archive_buf, cache_archive_size).await?;
 
     println!("Response: {:?}", res);
