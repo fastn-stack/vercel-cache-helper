@@ -34,7 +34,7 @@ pub async fn upload(
 
     println!("{:?}", build_dir_archive.metadata());
 
-    let build_archive_size =  build_dir_archive.read_to_end(&mut build_archive_buf)?;
+    let build_archive_size = build_dir_archive.read_to_end(&mut build_archive_buf)?;
     let cache_archive_size = cache_dir_archive.read_to_end(&mut cache_archive_buf)?;
 
     println!("Build archive bytes read: {} bytes", build_archive_size);
@@ -48,11 +48,15 @@ pub async fn upload(
 
     let mut build_put_req = remote_client.put(build_archive_hash, None)?;
     println!("Uploading build");
-    build_put_req.buffer(&mut build_archive_buf, build_archive_size).await?;
+    build_put_req
+        .buffer(&mut build_archive_buf, build_archive_size)
+        .await?;
 
     let mut cache_put_req = remote_client.put(cache_dir_hash, None)?;
     println!("Uploading Cache");
-    let res = cache_put_req.buffer(&mut cache_archive_buf, cache_archive_size).await?;
+    let res = cache_put_req
+        .buffer(&mut cache_archive_buf, cache_archive_size)
+        .await?;
 
     println!("Response: {:?}", res);
     println!("Response body: {:?}", res.text().await?);

@@ -6,18 +6,26 @@ use std::convert::From;
 pub enum Error {
     FileNotFound(String),
     InvalidInput(String),
+    EnvVarNotFound(String),
+    ReqwestError(String),
+    Other(Box<dyn std::error::Error + Send + Sync>),
 }
 
-impl std::error::Error for Error {}
-
 impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Error::FileNotFound(message) => write!(f, "File not found: {}", message),
             Error::InvalidInput(message) => write!(f, "Invalid input: {}", message),
+            Error::EnvVarNotFound(var_name) => {
+                write!(f, "Environment variable not found: {}", var_name)
+            }
+            Error::ReqwestError(message) => write!(f, "Reqwest error: {}", message),
+            Error::Other(inner) => write!(f, "Other error: {}", inner),
         }
     }
 }
+
+impl std::error::Error for Error {}
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -27,9 +35,15 @@ impl From<std::io::Error> for Error {
     }
 }
 
+impl From<std::env::VarError> for Error {
+    fn from(env_error: std::env::VarError) -> Self {
+        Error::EnvVarNotFound(env_error.to_string())
+    }
+}
+
 impl From<reqwest::Error> for Error {
     fn from(reqwest_error: reqwest::Error) -> Self {
-        Error::InvalidInput(reqwest_error.to_string())
+        Error::ReqwestError(reqwest_error.to_string())
     }
 }
 

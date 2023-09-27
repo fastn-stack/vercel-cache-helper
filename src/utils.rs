@@ -39,7 +39,10 @@ pub fn generate_file_hash(mut file: std::fs::File) -> vercel_cache_helper::Resul
     Ok(generate_hash(buf))
 }
 
-pub fn create_tar_gz_archive(src_folder: &std::path::PathBuf, dest_file: &std::fs::File) -> vercel_cache_helper::Result<()> {
+pub fn create_tar_gz_archive(
+    src_folder: &std::path::PathBuf,
+    dest_file: &std::fs::File,
+) -> vercel_cache_helper::Result<()> {
     println!("Creating archive from: {:?}", src_folder);
 
     if !src_folder.exists() {
@@ -52,7 +55,10 @@ pub fn create_tar_gz_archive(src_folder: &std::path::PathBuf, dest_file: &std::f
         return Ok(());
     }
 
-    let gz_encoder = std::io::BufWriter::new(flate2::write::GzEncoder::new(dest_file, flate2::Compression::default()));
+    let gz_encoder = std::io::BufWriter::new(flate2::write::GzEncoder::new(
+        dest_file,
+        flate2::Compression::default(),
+    ));
     let mut tar_builder = tar::Builder::new(gz_encoder);
 
     tar_builder.append_dir_all("", src_folder)?;

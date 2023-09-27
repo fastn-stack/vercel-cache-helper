@@ -125,7 +125,7 @@ impl ArtifactPutRequest {
     pub async fn buffer(
         &mut self,
         artifact: &mut [u8],
-        content_len: usize
+        content_len: usize,
     ) -> vercel_cache_helper::Result<reqwest::Response> {
         let client = reqwest::Client::new();
 

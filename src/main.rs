@@ -14,19 +14,25 @@ enum Commands {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> vercel_cache_helper::Result<()> {
     let cli = Cli::parse();
 
-    let token = std::env::var("VERCEL_TOKEN").expect("Vercel token not found");
+    let token = std::env::var("VERCEL_TOKEN").map_err(|_e| {
+        vercel_cache_helper::Error::EnvVarNotFound("Vercel token not found".to_string())
+    })?;
     let team_id = std::env::var("VERCEL_TEAM_ID").unwrap_or("".to_string());
-    let product = std::env::var("VERCEL_PRODUCT").expect("Vercel product name not found");
+    let product = std::env::var("VERCEL_PRODUCT").map_err(|_e| {
+        vercel_cache_helper::Error::EnvVarNotFound("Vercel product name not found".to_string())
+    })?;
 
     let remote_client = vercel_cache_helper::get_remote_client(token, Some(team_id), product);
 
-    let result_future: std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), vercel_cache_helper::Error>>>> = match &cli.command {
-        Some(Commands::Download {}) => {
-            Box::pin(vercel_cache_helper::commands::download::download(remote_client))
-        }
+    let result_future: std::pin::Pin<
+        Box<dyn std::future::Future<Output = Result<(), vercel_cache_helper::Error>>>,
+    > = match &cli.command {
+        Some(Commands::Download {}) => Box::pin(vercel_cache_helper::commands::download::download(
+            remote_client,
+        )),
         Some(Commands::Upload {}) => {
             Box::pin(vercel_cache_helper::commands::upload::upload(remote_client))
         }
@@ -35,4 +41,6 @@ async fn main() {
 
     // Now you can await the result_future if necessary
     let _ = result_future.await;
+
+    Ok(())
 }
