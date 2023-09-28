@@ -9,11 +9,11 @@ pub fn get_cache_dir() -> Option<std::path::PathBuf> {
     let cache_dir = dirs::cache_dir()?;
     let base_path = cache_dir.join("fastn.com");
 
-    println!("{}", base_path.to_string_lossy());
-
     if !base_path.exists() {
-        eprintln!("Cache dir not found");
-        return None;
+        if let Err(err) = std::fs::create_dir_all(&base_path) {
+            eprintln!("Failed to create cache directory: {}", err);
+            return None;
+        }
     }
 
     Some(
@@ -61,8 +61,22 @@ pub fn create_tar_gz_archive(
     ));
     let mut tar_builder = tar::Builder::new(gz_encoder);
 
-    tar_builder.append_dir_all("", src_folder)?;
+    tar_builder
+        .append_dir_all("", src_folder)
+        .map_err(|e| {
+            println!("Error creating archive: {:?}", e);
+            e
+        })?;
 
     println!("Archive created successfully.");
+    Ok(())
+}
+
+pub fn extract_tar_gz(buffer: &[u8], dest_path: &std::path::Path) -> vercel_cache_helper::Result<()> {
+    println!("Preparing to extract archive...");
+    let tar = flate2::read::GzDecoder::new(buffer);
+    let mut archive = tar::Archive::new(tar);
+    archive.unpack(dest_path)?;
+    println!("Unpacked archive in: {}", &dest_path.to_string_lossy());
     Ok(())
 }

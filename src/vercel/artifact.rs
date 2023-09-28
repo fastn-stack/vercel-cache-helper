@@ -129,11 +129,7 @@ impl ArtifactPutRequest {
     ) -> vercel_cache_helper::Result<reqwest::Response> {
         let client = reqwest::Client::new();
 
-        println!("{:?}", &artifact);
-
         let headers = self.0.get_headers("PUT", Some(content_len));
-
-        println!("Headers: {:?}", headers);
 
         let response = client
             .put(&self.0.url)
