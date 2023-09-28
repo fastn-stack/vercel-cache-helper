@@ -10,8 +10,8 @@ install_vercel_cache_helper() {
   local install_dir="$HOME/bin" # Change this to your desired installation directory
   mkdir -p "$install_dir"
 
-  # Download vercel-cache-helper
-  wget https://github.com/fastn-stack/vercel-cache-helper/releases/latest/download/vercel-cache-helper_linux_musl_x86_64 -O "$install_dir/vercel-cache-helper"
+  # Download vercel-cache-helper using curl
+  curl -fsSL https://github.com/fastn-stack/vercel-cache-helper/releases/latest/download/vercel-cache-helper_linux_musl_x86_64 -o "$install_dir/vercel-cache-helper"
 
   # Make it executable
   chmod +x "$install_dir/vercel-cache-helper"
@@ -26,11 +26,11 @@ install_vercel_cache_helper() {
 # Main script
 install_vercel_cache_helper
 
-# Execute vercel-cache-helper download
-vercel-cache-helper download
+# Execute vercel-cache-helper download (replace with the correct command you want to run)
+vercel-cache-helper # Replace with your actual vercel-cache-helper command
 
 # Build with fastn
 fastn build --edition=2023
 
-# Execute vercel-cache-helper upload
-vercel-cache-helper upload
+# Execute vercel-cache-helper upload (replace with the correct command you want to run)
+vercel-cache-helper # Replace with your actual vercel-cache-helper command
