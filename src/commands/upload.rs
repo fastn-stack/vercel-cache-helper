@@ -15,6 +15,12 @@ pub async fn upload(
     let cache_key_path = current_dir.join(".cache").join(".cache_key");
     let build_dir = current_dir.join(".build");
 
+    if let Some(dot_cache_folder) = &cache_key_path.parent() {
+        if !dot_cache_folder.exists() {
+            std::fs::create_dir(dot_cache_folder)?;
+        }
+    }
+
     if !build_dir.exists() {
         println!("Build dir does not exist: {:?}", build_dir);
         return Ok(());
@@ -52,6 +58,8 @@ pub async fn upload(
         .buffer(&mut build_archive_buf, build_archive_size)
         .await?;
 
+    println!("Uploaded .build");
+
     let mut cache_put_req = remote_client.put(cache_dir_hash.clone(), None)?;
 
     println!("Uploading .cache");
@@ -59,6 +67,8 @@ pub async fn upload(
     cache_put_req
         .buffer(&mut cache_archive_buf, cache_archive_size)
         .await?;
+
+    println!("Uploaded .cache");
 
     let cache_key_content = vec![cache_dir_hash, build_archive_hash].join("\n");
 
