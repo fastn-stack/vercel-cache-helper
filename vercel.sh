@@ -1,59 +1,33 @@
 #!/bin/bash
 
-# Set custom directory where binaries will be downloaded and placed in the PATH
-BIN_DIR="$HOME/bin"
-
-# Function to download a binary from a URL, rename it, and make it executable
-download_and_rename_binary() {
-    URL=$1
-    ORIGINAL_NAME=$2
-    NEW_NAME=$3
-
-    # Download the binary
-    curl -L -o "$BIN_DIR/$ORIGINAL_NAME" "$URL"
-    
-    # Rename the binary
-    mv "$BIN_DIR/$ORIGINAL_NAME" "$BIN_DIR/$NEW_NAME"
-    
-    # Make the binary executable
-    chmod +x "$BIN_DIR/$NEW_NAME"
+# Function to download and install fastn
+install_fastn() {
+  curl -fsSL https://raw.githubusercontent.com/ftd-lang/fastn/main/install.sh | sh
 }
 
-# Ensure the custom directory exists
-mkdir -p "$BIN_DIR"
+# Function to download vercel-cache-helper and add it to /usr/local/bin
+install_vercel_cache_helper() {
+  # Download vercel-cache-helper
+  wget https://github.com/fastn-stack/vercel-cache-helper/releases/latest/download/vercel-cache-helper_linux_musl_x86_64 -O /usr/local/bin/vercel-cache-helper
 
-# Download fastn binary
-fastn_url=$(curl -s "https://api.github.com/repos/fastn-stack/fastn/releases/latest" | grep -oP '"browser_download_url": "\K(https://.*fastn_linux_musl_x86_64)"')
-download_and_rename_binary "$fastn_url" "fastn_linux_musl_x86_64" "fastn"
+  # Make it executable
+  chmod +x /usr/local/bin/vercel-cache-helper
 
-# Download vercel-cache-helper binary
-vercel_cache_url=$(curl -s "https://github.com/fastn-stack/vercel-cache-helper/releases/latest" | grep -oP '"browser_download_url": "\K(https://.*vercel-cache-helper_linux_musl_x86_64)"')
-download_and_rename_binary "$vercel_cache_url" "vercel-cache-helper_linux_musl_x86_64" "vercel-cache-helper"
+  # Check if it's in the PATH
+  command -v vercel-cache-helper >/dev/null 2>&1 || {
+    echo "vercel-cache-helper not found in PATH. Please check your installation."
+    exit 1
+  }
+}
 
-# Add the custom directory to your PATH
-echo "export PATH=\$PATH:$BIN_DIR" >> "$HOME/.bashrc"
-source "$HOME/.bashrc"
+# Main script
+install_vercel_cache_helper
 
-# Ensure that the new PATH is loaded
-export PATH="$PATH:$BIN_DIR"
+# Execute vercel-cache-helper download
+vercel-cache-helper download
 
-# Run vercel-cache-helper download
-if command -v vercel-cache-helper &>/dev/null; then
-    vercel-cache-helper download
-else
-    echo "vercel-cache-helper not found in PATH. Please check your PATH configuration."
-fi
+# Build with fastn
+fastn build --edition=2023
 
-# Run fastn build
-if command -v fastn &>/dev/null; then
-    fastn build --edition=2023
-else
-    echo "fastn not found in PATH. Please check your PATH configuration."
-fi
-
-# Run vercel-cache-helper upload
-if command -v vercel-cache-helper &>/dev/null; then
-    vercel-cache-helper upload
-else
-    echo "vercel-cache-helper not found in PATH. Please check your PATH configuration."
-fi
+# Execute vercel-cache-helper upload
+vercel-cache-helper upload
