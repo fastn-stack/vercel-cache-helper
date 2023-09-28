@@ -9,7 +9,7 @@ pub async fn download(
     };
 
     let current_dir = std::env::current_dir()?;
-    let cache_key_path = current_dir.join(".cache_key");
+    let cache_key_path = current_dir.join(".cache").join(".cache_key");
     let build_dir = current_dir.join(".build");
 
     if !build_dir.exists() {
