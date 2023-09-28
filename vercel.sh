@@ -3,7 +3,7 @@
 # Function to download and install fastn
 install_fastn() {
   curl -fsSL https://raw.githubusercontent.com/ftd-lang/fastn/main/install.sh | sh
-}
+} 
 
 # Function to download vercel-cache-helper and add it to a user-specific directory
 install_vercel_cache_helper() {
@@ -27,6 +27,7 @@ install_vercel_cache_helper() {
 }
 
 # Main script
+install_fastn
 install_vercel_cache_helper
 
 # Execute vercel-cache-helper download (replace with the correct command you want to run)
