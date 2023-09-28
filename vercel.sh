@@ -16,6 +16,9 @@ install_vercel_cache_helper() {
   # Make it executable
   chmod +x "$install_dir/vercel-cache-helper"
 
+  # Add to the PATH
+  export PATH="$PATH:$install_dir"
+
   # Check if it's in the PATH
   command -v vercel-cache-helper >/dev/null 2>&1 || {
     echo "vercel-cache-helper not found in PATH. Please check your installation."
