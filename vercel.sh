@@ -34,11 +34,26 @@ download_and_rename_binary "$vercel_cache_url" "vercel-cache-helper_linux_musl_x
 echo "export PATH=\$PATH:$BIN_DIR" >> "$HOME/.bashrc"
 source "$HOME/.bashrc"
 
+# Ensure that the new PATH is loaded
+export PATH="$PATH:$BIN_DIR"
+
 # Run vercel-cache-helper download
-vercel-cache-helper download
+if command -v vercel-cache-helper &>/dev/null; then
+    vercel-cache-helper download
+else
+    echo "vercel-cache-helper not found in PATH. Please check your PATH configuration."
+fi
 
 # Run fastn build
-fastn build --edition=2023
+if command -v fastn &>/dev/null; then
+    fastn build --edition=2023
+else
+    echo "fastn not found in PATH. Please check your PATH configuration."
+fi
 
 # Run vercel-cache-helper upload
-vercel-cache-helper upload
+if command -v vercel-cache-helper &>/dev/null; then
+    vercel-cache-helper upload
+else
+    echo "vercel-cache-helper not found in PATH. Please check your PATH configuration."
+fi
