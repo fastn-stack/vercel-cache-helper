@@ -1,7 +1,7 @@
 use std::io::{Read, Seek};
 
 pub async fn upload(
-    remote_client: vercel_cache_helper::vercel::remote_cache_client::RemoteClient,
+    remote_client: vercel_cache_helper::vercel::remote_client::RemoteClient,
     path: &Option<std::path::PathBuf>,
 ) -> vercel_cache_helper::Result<()> {
     let cache_dir = if let Some(cache_dir) = vercel_cache_helper::utils::get_cache_dir() {
@@ -18,14 +18,7 @@ pub async fn upload(
         std::env::current_dir()?
     };
 
-    let cache_key_path = project_dir.join(".cache").join(".cache_key");
     let build_dir = project_dir.join(".build");
-
-    if let Some(dot_cache_folder) = &cache_key_path.parent() {
-        if !dot_cache_folder.exists() {
-            std::fs::create_dir(dot_cache_folder)?;
-        }
-    }
 
     if !build_dir.exists() {
         println!("Build dir does not exist: {:?}", build_dir);
@@ -76,9 +69,24 @@ pub async fn upload(
 
     println!("Uploaded .cache");
 
-    let cache_key_content = vec![cache_dir_hash, build_archive_hash].join("\n");
+    println!("Updating hash...");
 
-    std::fs::write(cache_key_path, cache_key_content)?;
+    remote_client
+        .set_env_var(
+            vercel_cache_helper::vercel::constants::FASTN_VERCEL_REMOTE_BUILD_HASH.to_string(),
+            build_archive_hash,
+        )
+        .await?;
+
+    remote_client
+        .set_env_var(
+            vercel_cache_helper::vercel::constants::FASTN_VERCEL_REMOTE_BUILD_CACHE_HASH
+                .to_string(),
+            cache_dir_hash,
+        )
+        .await?;
+
+    println!("Hash updated");
 
     println!("done!");
 

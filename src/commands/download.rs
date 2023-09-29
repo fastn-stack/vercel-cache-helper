@@ -1,5 +1,5 @@
 pub async fn download(
-    remote_client: vercel_cache_helper::vercel::remote_cache_client::RemoteClient,
+    remote_client: vercel_cache_helper::vercel::remote_client::RemoteClient,
     path: &Option<std::path::PathBuf>,
 ) -> vercel_cache_helper::Result<()> {
     let cache_dir = if let Some(cache_dir) = vercel_cache_helper::utils::get_cache_dir() {
@@ -14,19 +14,18 @@ pub async fn download(
     } else {
         std::env::current_dir()?
     };
-    let cache_key_path: std::path::PathBuf = project_dir.join(".cache").join(".cache_key");
     let build_dir = project_dir.join(".build");
 
     if !build_dir.exists() {
         std::fs::create_dir(&build_dir).expect("Failed to create .build dir.");
     }
 
-    let cache_key_file =
-        std::fs::read_to_string(cache_key_path).expect(".cache_key file not found");
-
-    let hash_keys = cache_key_file.split_once("\n").unwrap();
-
-    let (cache_dir_hash, build_archive_hash) = hash_keys;
+    let cache_dir_hash = std::env::var(
+        vercel_cache_helper::vercel::constants::FASTN_VERCEL_REMOTE_BUILD_CACHE_HASH.to_string(),
+    )?;
+    let build_archive_hash = std::env::var(
+        vercel_cache_helper::vercel::constants::FASTN_VERCEL_REMOTE_BUILD_HASH.to_string(),
+    )?;
 
     println!("Build archive hash: {:?}", build_archive_hash);
     println!("Cache dir hash: {:?}", cache_dir_hash);

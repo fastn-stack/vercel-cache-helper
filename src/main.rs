@@ -11,11 +11,11 @@ struct Cli {
 enum Commands {
     Download {
         #[arg(short, long)]
-        path: Option<std::path::PathBuf>
+        path: Option<std::path::PathBuf>,
     },
     Upload {
         #[arg(short, long)]
-        path: Option<std::path::PathBuf>
+        path: Option<std::path::PathBuf>,
     },
 }
 
@@ -36,13 +36,13 @@ async fn main() -> vercel_cache_helper::Result<()> {
     let result_future: std::pin::Pin<
         Box<dyn std::future::Future<Output = Result<(), vercel_cache_helper::Error>>>,
     > = match &cli.command {
-        Some(Commands::Download { path }) => Box::pin(vercel_cache_helper::commands::download::download(
+        Some(Commands::Download { path }) => Box::pin(
+            vercel_cache_helper::commands::download::download(remote_client, path),
+        ),
+        Some(Commands::Upload { path }) => Box::pin(vercel_cache_helper::commands::upload::upload(
             remote_client,
             path,
         )),
-        Some(Commands::Upload { path }) => {
-            Box::pin(vercel_cache_helper::commands::upload::upload(remote_client, path,))
-        }
         None => Box::pin(async { Ok(()) }),
     };
 

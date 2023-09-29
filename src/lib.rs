@@ -55,6 +55,6 @@ pub fn get_remote_client(
     token: String,
     team_id: Option<String>,
     product: String,
-) -> vercel::remote_cache_client::RemoteClient {
-    vercel::remote_cache_client::RemoteClient::new(token, team_id, product)
+) -> vercel::remote_client::RemoteClient {
+    vercel::remote_client::RemoteClient::new(token, team_id, product)
 }

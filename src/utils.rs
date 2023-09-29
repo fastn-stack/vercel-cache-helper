@@ -61,18 +61,19 @@ pub fn create_tar_gz_archive(
     ));
     let mut tar_builder = tar::Builder::new(gz_encoder);
 
-    tar_builder
-        .append_dir_all("", src_folder)
-        .map_err(|e| {
-            println!("Error creating archive: {:?}", e);
-            e
-        })?;
+    tar_builder.append_dir_all("", src_folder).map_err(|e| {
+        println!("Error creating archive: {:?}", e);
+        e
+    })?;
 
     println!("Archive created successfully.");
     Ok(())
 }
 
-pub fn extract_tar_gz(buffer: &[u8], dest_path: &std::path::Path) -> vercel_cache_helper::Result<()> {
+pub fn extract_tar_gz(
+    buffer: &[u8],
+    dest_path: &std::path::Path,
+) -> vercel_cache_helper::Result<()> {
     println!("Preparing to extract archive...");
     let tar = flate2::read::GzDecoder::new(buffer);
     let mut archive = tar::Archive::new(tar);

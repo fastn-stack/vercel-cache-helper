@@ -1,6 +1,6 @@
 [package]
 name = "vercel-cache-helper"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Hello world"
 
@@ -15,6 +15,8 @@ dirs = "5.0.1"
 sha2 = "0.10.8"
 tar = "0.4.40"
 tempfile = "3.8.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 [dependencies.flate2]
 git = "https://github.com/alexcrichton/flate2-rs"
