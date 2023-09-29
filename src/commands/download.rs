@@ -1,3 +1,5 @@
+use std::io::{Seek, Write};
+
 pub async fn download(
     remote_client: vercel_cache_helper::vercel::remote_client::RemoteClient,
     path: &Option<std::path::PathBuf>,
@@ -56,15 +58,23 @@ pub async fn download(
 
     println!("Downloading .build artifact");
 
+    let mut build_dir_archive = tempfile::tempfile()?;
+
     let mut build_get_req = remote_client.get(build_archive_hash.to_string(), None)?;
 
     let build_get_res = build_get_req.get().await?;
 
     println!("Downloaded .build artifact");
 
-    vercel_cache_helper::utils::extract_tar_gz(&build_get_res.bytes().await?.to_vec(), &build_dir)?;
+    build_dir_archive.write_all(&build_get_res.bytes().await?.to_vec())?;
+
+    build_dir_archive.seek(std::io::SeekFrom::Start(0))?;
+
+    vercel_cache_helper::utils::extract_tar_gz(build_dir_archive, &build_dir)?;
 
     println!("Downloading cache artifact");
+
+    let mut cache_dir_archive = tempfile::tempfile()?;
 
     let mut cache_get_req = remote_client.get(build_archive_hash.to_string(), None)?;
 
@@ -72,7 +82,11 @@ pub async fn download(
 
     println!("Downloaded cache artifact");
 
-    vercel_cache_helper::utils::extract_tar_gz(&cache_get_res.bytes().await?.to_vec(), &cache_dir)?;
+    cache_dir_archive.write_all(&cache_get_res.bytes().await?.to_vec())?;
+
+    cache_dir_archive.seek(std::io::SeekFrom::Start(0))?;
+
+    vercel_cache_helper::utils::extract_tar_gz(cache_dir_archive, &cache_dir)?;
 
     println!("done!");
 

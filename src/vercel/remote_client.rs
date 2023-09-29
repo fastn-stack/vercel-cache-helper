@@ -69,7 +69,9 @@ impl RemoteClient {
                 target: vec!["production".to_string(), "preview".to_string()],
                 git_branch: None,
                 comment: "Vercel cache helper generated hash".to_string(),
-            }).send().await?;
+            })
+            .send()
+            .await?;
 
         Ok(response)
     }
