@@ -78,8 +78,8 @@ pub fn extract_tar_gz(
         "Preparing to extract archive in {}...",
         dest_path.to_string_lossy()
     );
-    let tar = flate2::read::GzDecoder::new(file);
-    let mut archive = tar::Archive::new(tar);
+    let archive = flate2::read::GzDecoder::new(file);
+    let mut archive = tar::Archive::new(archive);
     if let Err(err) = archive.unpack(dest_path) {
         println!("Error extracting archive: {}", err);
         return Err(err.into());

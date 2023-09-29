@@ -68,7 +68,7 @@ pub async fn download(
 
     build_dir_archive.write_all(&build_get_res.bytes().await?.to_vec())?;
 
-    build_dir_archive.seek(std::io::SeekFrom::Start(0))?;
+    build_dir_archive.seek(std::io::SeekFrom::Start(0)).unwrap();
 
     vercel_cache_helper::utils::extract_tar_gz(build_dir_archive, &build_dir)?;
 
@@ -84,7 +84,7 @@ pub async fn download(
 
     cache_dir_archive.write_all(&cache_get_res.bytes().await?.to_vec())?;
 
-    cache_dir_archive.seek(std::io::SeekFrom::Start(0))?;
+    cache_dir_archive.seek(std::io::SeekFrom::Start(0)).unwrap();
 
     vercel_cache_helper::utils::extract_tar_gz(cache_dir_archive, &cache_dir)?;
 
