@@ -2,6 +2,7 @@ use std::io::{Read, Seek};
 
 pub async fn upload(
     remote_client: vercel_cache_helper::vercel::remote_cache_client::RemoteClient,
+    path: &Option<std::path::PathBuf>,
 ) -> vercel_cache_helper::Result<()> {
     let cache_dir = if let Some(cache_dir) = vercel_cache_helper::utils::get_cache_dir() {
         println!("Cache dir found: {:?}", cache_dir);
@@ -11,9 +12,14 @@ pub async fn upload(
         return Ok(());
     };
 
-    let current_dir = std::env::current_dir()?;
-    let cache_key_path = current_dir.join(".cache").join(".cache_key");
-    let build_dir = current_dir.join(".build");
+    let project_dir = if let Some(path) = path {
+        path.clone()
+    } else {
+        std::env::current_dir()?
+    };
+
+    let cache_key_path = project_dir.join(".cache").join(".cache_key");
+    let build_dir = project_dir.join(".build");
 
     if let Some(dot_cache_folder) = &cache_key_path.parent() {
         if !dot_cache_folder.exists() {
