@@ -30,11 +30,9 @@ install_vercel_cache_helper() {
 install_fastn
 install_vercel_cache_helper
 
-# Execute vercel-cache-helper download (replace with the correct command you want to run)
-vercel-cache-helper # Replace with your actual vercel-cache-helper command
+vercel-cache-helper download
 
 # Build with fastn
 fastn build --edition=2023
 
-# Execute vercel-cache-helper upload (replace with the correct command you want to run)
-vercel-cache-helper # Replace with your actual vercel-cache-helper command
+vercel-cache-helper upload
