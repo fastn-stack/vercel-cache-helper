@@ -74,10 +74,13 @@ pub fn extract_tar_gz(
     buffer: &[u8],
     dest_path: &std::path::Path,
 ) -> vercel_cache_helper::Result<()> {
-    println!("Preparing to extract archive...");
+    println!("Preparing to extract archive in {}...", dest_path.to_string_lossy());
     let tar = flate2::read::GzDecoder::new(buffer);
     let mut archive = tar::Archive::new(tar);
-    archive.unpack(dest_path)?;
+    if let Err(err) = archive.unpack(dest_path) {
+        println!("Error extracting archive: {}", err);
+        return Err(err.into());
+    }
     println!("Unpacked archive in: {}", &dest_path.to_string_lossy());
     Ok(())
 }
