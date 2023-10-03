@@ -237,15 +237,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "crc32fast"
-version = "1.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b540bd8bc810d3885c6ea91e2018302f68baba2129ab3e88f32389ee9370880d"
-dependencies = [
- "cfg-if",
-]
-
-[[package]]
 name = "crypto-common"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -338,15 +329,6 @@ dependencies = [
  "libc",
  "redox_syscall 0.3.5",
  "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "flate2"
-version = "1.0.27"
-source = "git+https://github.com/alexcrichton/flate2-rs#f62ff42615861f1d890160c5f77647466505eac0"
-dependencies = [
- "crc32fast",
- "miniz_oxide",
 ]
 
 [[package]]
@@ -1322,7 +1304,6 @@ dependencies = [
  "atty",
  "clap",
  "dirs",
- "flate2",
  "indicatif",
  "reqwest",
  "serde",
