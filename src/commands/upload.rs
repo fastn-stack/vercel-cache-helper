@@ -23,10 +23,11 @@ pub async fn upload(
 
     vercel_cache_helper::utils::create_tar_gz_archive(&output_dir, &output_dir_archive)?;
 
-    output_dir_archive.seek(std::io::SeekFrom::Start(0)).unwrap();
+    output_dir_archive
+        .seek(std::io::SeekFrom::Start(0))
+        .unwrap();
 
     let mut output_archive_buf: Vec<u8> = Vec::new();
-
     let output_archive_size = output_dir_archive.read_to_end(&mut output_archive_buf)?;
 
     println!("Output archive bytes read: {} bytes", output_archive_size);

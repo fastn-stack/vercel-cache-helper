@@ -19,8 +19,8 @@ pub async fn download(
 
     println!("Looking for artifacts...");
 
-    let mut output_exists_req = remote_client.exists(FASTN_VERCEL_REMOTE_BUILD_HASH.to_string(), None)?;
-
+    let mut output_exists_req =
+        remote_client.exists(FASTN_VERCEL_REMOTE_BUILD_HASH.to_string(), None)?;
     let output_artifact_exists = output_exists_req.send().await?;
 
     if output_artifact_exists {
@@ -33,16 +33,16 @@ pub async fn download(
     println!("Downloading .output artifact");
 
     let mut output_dir_archive = tempfile::tempfile()?;
-
     let mut output_get_req = remote_client.get(FASTN_VERCEL_REMOTE_BUILD_HASH.to_string(), None)?;
-
     let output_get_res = output_get_req.get().await?;
 
     println!("Downloaded .output artifact");
 
     output_dir_archive.write_all(&output_get_res.bytes().await?.to_vec())?;
 
-    output_dir_archive.seek(std::io::SeekFrom::Start(0)).unwrap();
+    output_dir_archive
+        .seek(std::io::SeekFrom::Start(0))
+        .unwrap();
 
     vercel_cache_helper::utils::extract_tar_gz(output_dir_archive, &output_dir)?;
 
