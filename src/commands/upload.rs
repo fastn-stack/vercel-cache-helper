@@ -1,27 +1,37 @@
 use std::io::{Read, Seek};
 
-use crate::vercel::constants::FASTN_VERCEL_REMOTE_BUILD_HASH;
-
 pub async fn upload(
     remote_client: vercel_cache_helper::vercel::remote_client::RemoteClient,
     path: &Option<std::path::PathBuf>,
 ) -> vercel_cache_helper::Result<()> {
+    let cache_dir = if let Some(cache_dir) = vercel_cache_helper::utils::get_cache_dir() {
+        println!("Cache dir found: {:?}", cache_dir);
+        cache_dir
+    } else {
+        println!("Cache dir not found");
+        return Ok(());
+    };
+
     let project_dir = if let Some(path) = path {
         path.clone()
     } else {
         std::env::current_dir()?
     };
 
-    let output_dir = project_dir.join(".output");
+    let build_dir = project_dir.join(".build");
+    let output_dir = tempfile::tempdir()?;
+    let build_dir_dest = output_dir.path().join(".build");
+    let cache_dir_dest = output_dir.path().join("cache");
 
-    if !output_dir.exists() {
-        println!("Output dir does not exist: {:?}", output_dir);
-        return Ok(());
-    }
+    vercel_cache_helper::utils::copy_recursively(build_dir, build_dir_dest)?;
+    vercel_cache_helper::utils::copy_recursively(cache_dir, cache_dir_dest)?;
 
     let mut output_dir_archive = tempfile::tempfile()?;
 
-    vercel_cache_helper::utils::create_tar_gz_archive(&output_dir, &output_dir_archive)?;
+    vercel_cache_helper::utils::create_tar_gz_archive(
+        &output_dir.path().to_path_buf(),
+        &output_dir_archive,
+    )?;
 
     output_dir_archive
         .seek(std::io::SeekFrom::Start(0))
@@ -32,7 +42,10 @@ pub async fn upload(
 
     println!("Output archive bytes read: {} bytes", output_archive_size);
 
-    let mut output_put_req = remote_client.put(FASTN_VERCEL_REMOTE_BUILD_HASH.to_string(), None)?;
+    let mut output_put_req = remote_client.put(
+        vercel_cache_helper::vercel::constants::FASTN_VERCEL_REMOTE_CACHE_HASH.to_string(),
+        None,
+    )?;
 
     println!("Uploading .output archive");
 
