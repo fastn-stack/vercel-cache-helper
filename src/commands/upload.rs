@@ -21,10 +21,12 @@ pub async fn upload(
 
     let pb = ProgressBar::new_spinner();
     pb.enable_steady_tick(std::time::Duration::new(0, 500));
-    pb.set_style(ProgressStyle::default_spinner()
-        .template("[{spinner}] {prefix} {wide_msg}")
-        .unwrap()
-        .tick_chars("/|\\- "));
+    pb.set_style(
+        ProgressStyle::default_spinner()
+            .template("[{spinner}] {prefix} {wide_msg}")
+            .unwrap()
+            .tick_chars("/|\\- "),
+    );
     pb.set_message("Preparing to upload artifacts...");
 
     let build_dir = project_dir.join(".build");
@@ -37,7 +39,7 @@ pub async fn upload(
 
     let mut output_dir_archive = tempfile::tempfile()?;
 
-    vercel_cache_helper::utils::create_tar_gz_archive(
+    vercel_cache_helper::utils::create_tar_zst_archive(
         &output_dir.path().to_path_buf(),
         &output_dir_archive,
     )?;

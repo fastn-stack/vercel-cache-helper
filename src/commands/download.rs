@@ -18,13 +18,15 @@ pub async fn download(
         return Ok(());
     };
     let output_dir = tempfile::tempdir()?;
-    
+
     let pb = ProgressBar::new_spinner();
     pb.enable_steady_tick(std::time::Duration::new(0, 500));
-    pb.set_style(ProgressStyle::default_spinner()
-        .template("[{spinner}] {prefix} {wide_msg}")
-        .unwrap()
-        .tick_chars("/|\\- "));
+    pb.set_style(
+        ProgressStyle::default_spinner()
+            .template("[{spinner}] {prefix} {wide_msg}")
+            .unwrap()
+            .tick_chars("/|\\- "),
+    );
     pb.set_message("Looking for artifacts...");
     let mut output_exists_req = remote_client.exists(
         vercel_cache_helper::vercel::constants::FASTN_VERCEL_REMOTE_CACHE_HASH.to_string(),
@@ -70,7 +72,10 @@ pub async fn download(
         .seek(std::io::SeekFrom::Start(0))
         .unwrap();
 
-    vercel_cache_helper::utils::extract_tar_gz(output_dir_archive, &output_dir.path())?;
+    vercel_cache_helper::utils::extract_tar_zst(
+        output_dir_archive,
+        &output_dir.path().to_path_buf(),
+    )?;
 
     let temp_build_dir = output_dir.path().join(".build");
     let temp_cache_dir = output_dir.path().join("cache");
