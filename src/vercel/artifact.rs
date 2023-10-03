@@ -101,6 +101,7 @@ impl ArtifactPutRequest {
     pub async fn stream(
         &mut self,
         artifact: &mut (dyn tokio::io::AsyncRead + Unpin),
+        content_len: usize,
     ) -> vercel_cache_helper::Result<reqwest::Response> {
         use tokio::io::AsyncReadExt;
         let client = reqwest::Client::new();
@@ -108,7 +109,7 @@ impl ArtifactPutRequest {
 
         artifact.read_to_end(&mut body).await?;
 
-        let headers = self.0.get_headers("PUT", None);
+        let headers = self.0.get_headers("PUT", Some(content_len));
 
         println!("Headers: {:?}", headers);
 

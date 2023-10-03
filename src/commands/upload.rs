@@ -1,3 +1,4 @@
+use indicatif::{ProgressBar, ProgressStyle};
 use std::io::{Read, Seek};
 
 pub async fn upload(
@@ -18,6 +19,14 @@ pub async fn upload(
         std::env::current_dir()?
     };
 
+    let pb = ProgressBar::new_spinner();
+    pb.enable_steady_tick(std::time::Duration::new(0, 500));
+    pb.set_style(ProgressStyle::default_spinner()
+        .template("[{spinner}] {prefix} {wide_msg}")
+        .unwrap()
+        .tick_chars("/|\\- "));
+    pb.set_message("Preparing to upload artifacts...");
+
     let build_dir = project_dir.join(".build");
     let output_dir = tempfile::tempdir()?;
     let build_dir_dest = output_dir.path().join(".build");
@@ -33,6 +42,9 @@ pub async fn upload(
         &output_dir_archive,
     )?;
 
+    pb.finish_with_message("Artifact archive created.");
+    pb.reset();
+
     output_dir_archive
         .seek(std::io::SeekFrom::Start(0))
         .unwrap();
@@ -47,15 +59,13 @@ pub async fn upload(
         None,
     )?;
 
-    println!("Uploading .output archive");
+    pb.set_message("Uploading artfiacts...");
 
     output_put_req
         .buffer(&mut output_archive_buf, output_archive_size)
         .await?;
 
-    println!("Uploaded .output archive");
-
-    println!("done!");
+    pb.finish_with_message("Artifacts uploaded successfully.");
 
     Ok(())
 }

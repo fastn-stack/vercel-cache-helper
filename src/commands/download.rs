@@ -1,3 +1,4 @@
+use indicatif::{ProgressBar, ProgressStyle};
 use std::io::{Seek, Write};
 
 pub async fn download(
@@ -10,16 +11,21 @@ pub async fn download(
         std::env::current_dir()?
     };
     let cache_dir = if let Some(cache_dir) = vercel_cache_helper::utils::get_cache_dir() {
-        println!("Cache dir found: {:?}", cache_dir);
+        println!("Cache dir found: '{:?}'", cache_dir);
         cache_dir
     } else {
-        println!("Cache dir not found");
+        println!("Cache dir not found.");
         return Ok(());
     };
     let output_dir = tempfile::tempdir()?;
-
-    println!("Looking for artifacts...");
-
+    
+    let pb = ProgressBar::new_spinner();
+    pb.enable_steady_tick(std::time::Duration::new(0, 500));
+    pb.set_style(ProgressStyle::default_spinner()
+        .template("[{spinner}] {prefix} {wide_msg}")
+        .unwrap()
+        .tick_chars("/|\\- "));
+    pb.set_message("Looking for artifacts...");
     let mut output_exists_req = remote_client.exists(
         vercel_cache_helper::vercel::constants::FASTN_VERCEL_REMOTE_CACHE_HASH.to_string(),
         None,
@@ -27,13 +33,14 @@ pub async fn download(
     let output_artifact_exists = output_exists_req.send().await?;
 
     if output_artifact_exists {
-        println!(".output artifact found");
+        pb.finish_with_message("Remote artifact found");
     } else {
-        println!(".output artifact not found");
+        pb.finish_with_message("No remote artifact found");
         return Ok(());
     }
 
-    println!("Downloading .output artifact");
+    pb.reset();
+    pb.set_message("Downloading artifacts");
 
     let mut output_dir_archive = tempfile::tempfile()?;
     let mut output_get_req = remote_client.get(
@@ -41,11 +48,23 @@ pub async fn download(
         None,
     )?;
 
-    let output_get_res = output_get_req.get().await?;
+    let mut output_get_res = output_get_req.get().await?;
+    let download_size = output_get_res.content_length().unwrap_or(0);
 
-    println!("Downloaded .output artifact");
+    let mut downloaded_bytes: u64 = 0;
 
-    output_dir_archive.write_all(&output_get_res.bytes().await?.to_vec())?;
+    while let Some(chunk) = output_get_res.chunk().await? {
+        output_dir_archive.write_all(&chunk)?;
+
+        downloaded_bytes += chunk.len() as u64;
+
+        if download_size > 0 {
+            pb.set_position(downloaded_bytes);
+            pb.set_length(download_size);
+        }
+    }
+
+    pb.finish_with_message("Remote artifacts downloaded");
 
     output_dir_archive
         .seek(std::io::SeekFrom::Start(0))
@@ -59,7 +78,7 @@ pub async fn download(
     vercel_cache_helper::utils::copy_recursively(temp_build_dir, project_dir.join(".build"))?;
     vercel_cache_helper::utils::copy_recursively(temp_cache_dir, cache_dir)?;
 
-    println!("done!");
+    println!("Cached artifacts downloaded and copied successfully.");
 
     Ok(())
 }
