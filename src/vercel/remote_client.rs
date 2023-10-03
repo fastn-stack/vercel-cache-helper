@@ -1,10 +1,7 @@
-use serde::{Deserialize, Serialize};
-
 #[derive(Debug)]
 pub struct RemoteClient {
     token: String,
     team_id: Option<String>,
-    product: String,
     user_agent: String,
 }
 
@@ -14,7 +11,6 @@ impl RemoteClient {
         RemoteClient {
             token,
             team_id,
-            product: product.clone(),
             user_agent: vercel_cache_helper::vercel::utils::get_user_agent(product.as_str()),
         }
     }
@@ -36,44 +32,6 @@ impl RemoteClient {
             hash,
             params
         ))
-    }
-
-    fn get_project_env_endpoint_url(&self) -> vercel_cache_helper::Result<String> {
-        let params = if let Some(team_id) = &self.team_id {
-            format!("?teamId={}", team_id)
-        } else {
-            "".to_string()
-        };
-        Ok(format!(
-            "{}/{}/env/{}",
-            super::constants::REMOTE_PROJECT_ENDPOINT,
-            &self.product,
-            params
-        ))
-    }
-
-    pub async fn set_env_var(
-        &self,
-        key: String,
-        value: String,
-    ) -> vercel_cache_helper::Result<reqwest::Response> {
-        let client = reqwest::Client::new();
-
-        let response = client
-            .post(&self.get_project_env_endpoint_url()?)
-            .bearer_auth(&self.token)
-            .json(&EnvVarData {
-                key,
-                value,
-                data_type: "plain".to_string(),
-                target: vec!["production".to_string(), "preview".to_string()],
-                git_branch: None,
-                comment: "Vercel cache helper generated hash".to_string(),
-            })
-            .send()
-            .await?;
-
-        Ok(response)
     }
 
     pub fn get(
@@ -125,16 +83,4 @@ impl RemoteClient {
             ),
         )
     }
-}
-
-#[derive(Serialize, Deserialize)]
-struct EnvVarData {
-    key: String,
-    value: String,
-    #[serde(rename = "type")]
-    data_type: String,
-    target: Vec<String>,
-    #[serde(rename = "gitBranch")]
-    git_branch: Option<String>,
-    comment: String,
 }

@@ -1,92 +1,50 @@
 use std::io::{Seek, Write};
 
+use crate::vercel::constants::FASTN_VERCEL_REMOTE_BUILD_HASH;
+
 pub async fn download(
     remote_client: vercel_cache_helper::vercel::remote_client::RemoteClient,
     path: &Option<std::path::PathBuf>,
 ) -> vercel_cache_helper::Result<()> {
-    let cache_dir = if let Some(cache_dir) = vercel_cache_helper::utils::get_cache_dir() {
-        println!("Cache dir found: {:?}", cache_dir);
-        cache_dir
-    } else {
-        return Ok(());
-    };
-
     let project_dir = if let Some(path) = path {
         path.clone()
     } else {
         std::env::current_dir()?
     };
-    let build_dir = project_dir.join(".build");
+    let output_dir = project_dir.join(".output");
 
-    if !build_dir.exists() {
-        std::fs::create_dir(&build_dir).expect("Failed to create .build dir.");
+    if !output_dir.exists() {
+        std::fs::create_dir(&output_dir).expect("Failed to create .output dir.");
     }
-
-    let cache_dir_hash = std::env::var(
-        vercel_cache_helper::vercel::constants::FASTN_VERCEL_REMOTE_BUILD_CACHE_HASH.to_string(),
-    )?;
-    let build_archive_hash = std::env::var(
-        vercel_cache_helper::vercel::constants::FASTN_VERCEL_REMOTE_BUILD_HASH.to_string(),
-    )?;
-
-    println!("Build archive hash: {:?}", build_archive_hash);
-    println!("Cache dir hash: {:?}", cache_dir_hash);
 
     println!("Looking for artifacts...");
 
-    let mut build_exists_req = remote_client.exists(build_archive_hash.to_string(), None)?;
+    let mut output_exists_req = remote_client.exists(FASTN_VERCEL_REMOTE_BUILD_HASH.to_string(), None)?;
 
-    let build_artifact_exists = build_exists_req.send().await?;
+    let output_artifact_exists = output_exists_req.send().await?;
 
-    if build_artifact_exists {
-        println!(".build artifact found");
+    if output_artifact_exists {
+        println!(".output artifact found");
     } else {
-        println!(".build artifact not found");
+        println!(".output artifact not found");
         return Ok(());
     }
 
-    let mut cache_exists_req = remote_client.exists(cache_dir_hash.to_string(), None)?;
+    println!("Downloading .output artifact");
 
-    let cache_artifact_exists = cache_exists_req.send().await?;
+    let mut output_dir_archive = tempfile::tempfile()?;
 
-    if cache_artifact_exists {
-        println!("cache artifact found");
-    } else {
-        println!("cache artifact not found");
-        return Ok(());
-    }
+    let mut output_get_req = remote_client.get(FASTN_VERCEL_REMOTE_BUILD_HASH.to_string(), None)?;
 
-    println!("Downloading .build artifact");
+    let output_get_res = output_get_req.get().await?;
 
-    let mut build_dir_archive = tempfile::tempfile()?;
+    println!("Downloaded .output artifact");
 
-    let mut build_get_req = remote_client.get(build_archive_hash.to_string(), None)?;
+    output_dir_archive.write_all(&output_get_res.bytes().await?.to_vec())?;
 
-    let build_get_res = build_get_req.get().await?;
+    output_dir_archive.seek(std::io::SeekFrom::Start(0)).unwrap();
 
-    println!("Downloaded .build artifact");
-
-    build_dir_archive.write_all(&build_get_res.bytes().await?.to_vec())?;
-
-    build_dir_archive.seek(std::io::SeekFrom::Start(0)).unwrap();
-
-    vercel_cache_helper::utils::extract_tar_gz(build_dir_archive, &build_dir)?;
-
-    println!("Downloading cache artifact");
-
-    let mut cache_dir_archive = tempfile::tempfile()?;
-
-    let mut cache_get_req = remote_client.get(build_archive_hash.to_string(), None)?;
-
-    let cache_get_res = cache_get_req.get().await?;
-
-    println!("Downloaded cache artifact");
-
-    cache_dir_archive.write_all(&cache_get_res.bytes().await?.to_vec())?;
-
-    cache_dir_archive.seek(std::io::SeekFrom::Start(0)).unwrap();
-
-    vercel_cache_helper::utils::extract_tar_gz(cache_dir_archive, &cache_dir)?;
+    vercel_cache_helper::utils::extract_tar_gz(output_dir_archive, &output_dir)?;
 
     println!("done!");
 
