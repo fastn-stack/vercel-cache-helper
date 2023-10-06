@@ -132,7 +132,7 @@ impl ArtifactPutRequest {
 
         let headers = self.0.get_headers("PUT", Some(content_len));
 
-        dbg!(headers);
+        dbg!(&headers);
 
         let response = dbg!(client
             .put(&self.0.url)
