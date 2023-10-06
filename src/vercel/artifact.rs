@@ -41,10 +41,10 @@ impl RequestHeaders for ArtifactBaseRequest {
             reqwest::header::HeaderValue::from_str(&format!("Bearer {}", self.token)).unwrap(),
         );
 
-        headers.insert(
-            reqwest::header::USER_AGENT,
-            reqwest::header::HeaderValue::from_str(&self.user_agent).unwrap(),
-        );
+        // headers.insert(
+        //     reqwest::header::USER_AGENT,
+        //     reqwest::header::HeaderValue::from_str(&self.user_agent).unwrap(),
+        // );
 
         if method == "PUT" {
             headers.insert(
@@ -76,18 +76,18 @@ impl RequestHeaders for ArtifactBaseRequest {
             }
         }
 
-        if let Ok(ci_name) = std::env::var("CI") {
-            headers.insert(
-                reqwest::header::HeaderName::from_static("x-artifact-client-ci"),
-                reqwest::header::HeaderValue::from_str(&ci_name).unwrap(),
-            );
-        }
+        // if let Ok(ci_name) = std::env::var("CI") {
+        //     headers.insert(
+        //         reqwest::header::HeaderName::from_static("x-artifact-client-ci"),
+        //         reqwest::header::HeaderValue::from_str(&ci_name).unwrap(),
+        //     );
+        // }
 
-        let is_tty = atty::is(atty::Stream::Stdout);
-        headers.insert(
-            reqwest::header::HeaderName::from_static("x-artifact-client-interactive"),
-            reqwest::header::HeaderValue::from_str(if is_tty { "1" } else { "0" }).unwrap(),
-        );
+        // let is_tty = atty::is(atty::Stream::Stdout);
+        // headers.insert(
+        //     reqwest::header::HeaderName::from_static("x-artifact-client-interactive"),
+        //     reqwest::header::HeaderValue::from_str(if is_tty { "1" } else { "0" }).unwrap(),
+        // );
 
         headers
     }
@@ -151,9 +151,9 @@ impl ArtifactGetRequest {
 
         dbg!(&headers);
 
-        let response = client
+        let response = dbg!(client
             .get(&self.0.url)
-            .headers(headers)
+            .headers(headers))
             .send()
             .await?;
 
