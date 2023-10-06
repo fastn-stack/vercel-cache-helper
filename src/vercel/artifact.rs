@@ -49,7 +49,7 @@ impl RequestHeaders for ArtifactBaseRequest {
         if method == "PUT" {
             headers.insert(
                 reqwest::header::CONTENT_TYPE,
-                reqwest::header::HeaderValue::from_static("application/zstd"),
+                reqwest::header::HeaderValue::from_static("application/octet-stream"),
             );
 
             if let Some(content_len) = content_len {
@@ -132,14 +132,16 @@ impl ArtifactPutRequest {
 
         let headers = self.0.get_headers("PUT", Some(content_len));
 
-        let response = client
+        dbg!(headers);
+
+        let response = dbg!(client
             .put(&self.0.url)
             .headers(headers)
-            .body(artifact.to_owned())
+            .body(artifact.to_owned()))
             .send()
             .await?;
 
-        Ok(response)
+        Ok(dbg!(response))
     }
 }
 
