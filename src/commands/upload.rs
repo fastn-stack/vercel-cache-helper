@@ -68,8 +68,6 @@ pub async fn upload(
         .stream(&mut output_archive_cursor, output_archive_size)
         .await?;
 
-    dbg!(&response);
-
     if !response.status().is_success() {
         println!("Could not upload artifacts.");
         return Ok(());
