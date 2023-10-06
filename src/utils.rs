@@ -111,7 +111,13 @@ pub fn extract_tar_zst(file: std::fs::File, dest_path: &std::path::PathBuf) -> s
     let mut archive = tar::Archive::new(zst_decoder);
 
     // Ensure that directories are created as needed while extracting
-    archive.unpack(dest_path)?;
+    archive.unpack(dest_path).expect(
+        format!(
+            "Could not extract files in: {}",
+            dest_path.to_string_lossy()
+        )
+        .as_str(),
+    );
 
     println!("Unpacked archive in: {}", &dest_path.to_string_lossy());
     Ok(())
