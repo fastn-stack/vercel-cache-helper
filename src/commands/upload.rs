@@ -63,9 +63,11 @@ pub async fn upload(
 
     pb.set_message("Uploading artfiacts...");
 
-    output_put_req
+    let res = output_put_req
         .buffer(&mut output_archive_buf, output_archive_size)
         .await?;
+
+    assert!(res.status().is_success(), "Could not upload artifacts.");
 
     pb.finish_with_message("Artifacts uploaded successfully.");
 

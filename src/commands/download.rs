@@ -43,18 +43,13 @@ pub async fn download(
 
     let output_get_res = output_get_req.get().await?;
 
+    assert!(output_get_res.status().is_success(), "Build artifacts could not be downloaded.");
+
     println!("Build artifacts downloaded");
 
     let buf = &output_get_res.bytes().await?.to_vec();
 
-    if !vercel_cache_helper::utils::is_zstd_compressed(&buf) {
-        return Err(vercel_cache_helper::Error::InvalidInput(
-            format!(
-                "Downloaded archive (Size: {}) is not zstd compressed",
-                &buf.len()
-            )
-        ));
-    }
+    assert!(vercel_cache_helper::utils::is_zstd_compressed(&buf), "Downloaded archive (Size: {}) is not zstd compressed.", &buf.len());
 
     output_dir_archive.write_all(buf)?;
 
