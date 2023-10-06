@@ -33,6 +33,8 @@ async fn main() -> vercel_cache_helper::Result<()> {
 
     let remote_client = vercel_cache_helper::get_remote_client(token, Some(team_id), product);
 
+    println!("🚀 fastn Vercel Cache Helper v{}", env!("CARGO_PKG_VERSION"));
+
     let result_future: std::pin::Pin<
         Box<dyn std::future::Future<Output = Result<(), vercel_cache_helper::Error>>>,
     > = match &cli.command {
