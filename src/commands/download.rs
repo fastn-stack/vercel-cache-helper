@@ -26,7 +26,10 @@ pub async fn download(
     )?;
     let output_artifact_exists = output_exists_req.send().await?;
 
-    assert!(output_artifact_exists, "Build artifacts not found");
+    if !output_artifact_exists {
+        println!("Build artifacts not found.");
+        return Ok(());
+    }
 
     println!("Build artifacts found. Downloading build artifacts...");
 
