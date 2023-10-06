@@ -26,14 +26,9 @@ pub async fn download(
     )?;
     let output_artifact_exists = output_exists_req.send().await?;
 
-    if output_artifact_exists {
-        println!("Build artifacts found");
-    } else {
-        println!("Build artifacts not found");
-        return Ok(());
-    }
+    assert!(output_artifact_exists, "Build artifacts not found");
 
-    println!("Downloading build artifacts");
+    println!("Build artifacts found. Downloading build artifacts...");
 
     let mut output_dir_archive = tempfile::tempfile()?;
     let mut output_get_req = remote_client.get(
@@ -43,7 +38,7 @@ pub async fn download(
 
     let output_get_res = output_get_req.get().await?;
 
-    assert!(output_get_res.status().is_success(), "Build artifacts could not be downloaded.");
+    assert!(output_get_res.status().is_success(), "Build artifacts could not be downloaded: {:#?}", output_get_res);
 
     println!("Build artifacts downloaded");
 
