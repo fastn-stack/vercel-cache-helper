@@ -147,9 +147,13 @@ impl ArtifactGetRequest {
     pub async fn get(&mut self) -> vercel_cache_helper::Result<reqwest::Response> {
         let client = reqwest::Client::new();
 
+        let headers = self.0.get_headers("GET", None);
+
+        dbg!(&headers);
+
         let response = client
             .get(&self.0.url)
-            .headers(self.0.get_headers("GET", None))
+            .headers(headers)
             .send()
             .await?;
 
