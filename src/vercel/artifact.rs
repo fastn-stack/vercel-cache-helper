@@ -41,10 +41,10 @@ impl RequestHeaders for ArtifactBaseRequest {
             reqwest::header::HeaderValue::from_str(&format!("Bearer {}", self.token)).unwrap(),
         );
 
-        // headers.insert(
-        //     reqwest::header::USER_AGENT,
-        //     reqwest::header::HeaderValue::from_str(&self.user_agent).unwrap(),
-        // );
+        headers.insert(
+            reqwest::header::USER_AGENT,
+            reqwest::header::HeaderValue::from_str(&self.user_agent).unwrap(),
+        );
 
         if method == "PUT" {
             headers.insert(
@@ -111,7 +111,6 @@ impl ArtifactPutRequest {
 
         let headers = self.0.get_headers("PUT", Some(content_len));
 
-        println!("Headers: {:?}", headers);
 
         let response = client
             .put(&self.0.url)
@@ -132,16 +131,14 @@ impl ArtifactPutRequest {
 
         let headers = self.0.get_headers("PUT", Some(content_len));
 
-        dbg!(&headers);
-
-        let response = dbg!(client
+        let response = client
             .put(&self.0.url)
             .headers(headers)
-            .body(artifact.to_owned()))
+            .body(artifact.to_owned())
             .send()
             .await?;
 
-        Ok(dbg!(response))
+        Ok(response)
     }
 }
 
@@ -151,11 +148,9 @@ impl ArtifactGetRequest {
 
         let headers = self.0.get_headers("GET", None);
 
-        dbg!(&headers);
-
-        let response = dbg!(client
+        let response = client
             .get(&self.0.url)
-            .headers(headers))
+            .headers(headers)
             .send()
             .await?;
 
