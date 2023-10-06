@@ -100,6 +100,16 @@ pub fn create_tar_zst_archive(
     }
 }
 
+pub fn is_zstd_compressed(data: &[u8]) -> bool {
+    if data.len() >= 4 {
+        // Check if the first 4 bytes match the Zstd magic number
+        if &data[0..4] == &[0x28, 0xB5, 0x2F, 0xFD] {
+            return true;
+        }
+    }
+    false
+}
+
 pub fn extract_tar_zst(file: std::fs::File, dest_path: &std::path::PathBuf) -> std::io::Result<()> {
     println!(
         "Preparing to extract archive in {}...",

@@ -43,15 +43,29 @@ pub async fn download(
 
     let output_get_res = output_get_req.get().await?;
 
-    println!("build artifacts downloaded");
+    println!("Build artifacts downloaded");
 
-    output_dir_archive.write_all(&output_get_res.bytes().await?.to_vec())?;
+    let buf = &output_get_res.bytes().await?.to_vec();
+
+    if !vercel_cache_helper::utils::is_zstd_compressed(&buf) {
+        return Err(vercel_cache_helper::Error::InvalidInput(
+            format!(
+                "Downloaded archive (Size: {}) is not zstd compressed",
+                &buf.len()
+            )
+        ));
+    }
+
+    output_dir_archive.write_all(buf)?;
 
     output_dir_archive
         .seek(std::io::SeekFrom::Start(0))
         .unwrap();
 
-    vercel_cache_helper::utils::extract_tar_zst(output_dir_archive, &output_dir.path().to_path_buf())?;
+    vercel_cache_helper::utils::extract_tar_zst(
+        output_dir_archive,
+        &output_dir.path().to_path_buf(),
+    )?;
 
     let temp_build_dir = output_dir.path().join(".build");
     let temp_cache_dir = output_dir.path().join("cache");
