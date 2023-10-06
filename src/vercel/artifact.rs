@@ -111,7 +111,6 @@ impl ArtifactPutRequest {
 
         let headers = self.0.get_headers("PUT", Some(content_len));
 
-
         let response = client
             .put(&self.0.url)
             .headers(headers)
@@ -148,11 +147,7 @@ impl ArtifactGetRequest {
 
         let headers = self.0.get_headers("GET", None);
 
-        let response = client
-            .get(&self.0.url)
-            .headers(headers)
-            .send()
-            .await?;
+        let response = client.get(&self.0.url).headers(headers).send().await?;
 
         Ok(response)
     }

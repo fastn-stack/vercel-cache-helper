@@ -63,11 +63,15 @@ pub async fn upload(
 
     pb.set_message("Uploading artfiacts...");
 
-    let res = output_put_req
-        .buffer(&mut output_archive_buf, output_archive_size)
+    let mut output_archive_cursor = std::io::Cursor::new(output_archive_buf);
+    let response = output_put_req
+        .stream(&mut output_archive_cursor, output_archive_size)
         .await?;
 
-    assert!(res.status().is_success(), "Could not upload artifacts.");
+    if !response.status().is_success() {
+        println!("Could not upload artifacts.");
+        return Ok(());
+    }
 
     pb.finish_with_message("Artifacts uploaded successfully.");
 
