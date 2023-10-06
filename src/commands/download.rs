@@ -38,7 +38,7 @@ pub async fn download(
 
     let output_get_res = output_get_req.get().await?;
 
-    assert!(output_get_res.status().is_success(), "Build artifacts could not be downloaded: {:#?}", output_get_res);
+    assert!(output_get_res.status().is_success(), "Build artifacts could not be downloaded.");
 
     println!("Build artifacts downloaded");
 
