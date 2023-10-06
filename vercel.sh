@@ -14,7 +14,7 @@ install_vercel_cache_helper() {
 
   # Download vercel-cache-helper using curl
   echo "🚀 Downloading vercel-cache-helper..."
-  curl -fsSL https://github.com/harshdoesdev/vercel-cache-helper/releases/latest/download/vercel-cache-helper_linux_musl_x86_64 -o "$install_dir/vercel-cache-helper"
+  curl -fsSL https://github.com/fastn-stack/vercel-cache-helper/releases/latest/download/vercel-cache-helper_linux_musl_x86_64 -o "$install_dir/vercel-cache-helper"
 
   # Make it executable
   chmod +x "$install_dir/vercel-cache-helper"
