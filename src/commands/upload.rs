@@ -66,7 +66,7 @@ pub async fn upload(
     let size = output_dir_archive.metadata()?.len();
 
     let response = output_put_req
-        .stream(output_dir_archive, size)?;
+        .stream(output_dir_archive, size).await?;
 
     if !response.status().is_success() {
         println!("Could not upload artifacts.");

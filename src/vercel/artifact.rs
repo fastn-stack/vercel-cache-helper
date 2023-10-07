@@ -1,3 +1,5 @@
+use tokio_util::codec::{BytesCodec, FramedRead};
+
 pub struct ArtifactOptions {
     duration: Option<u64>,
     tag: Option<String>,
@@ -97,23 +99,31 @@ pub struct ArtifactPutRequest(pub ArtifactBaseRequest);
 pub struct ArtifactGetRequest(pub ArtifactBaseRequest);
 pub struct ArtifactExistsRequest(pub ArtifactBaseRequest);
 
+fn file_to_body(file: std::fs::File) -> reqwest::Body {
+    let stream = FramedRead::new(tokio::fs::File::from(file), BytesCodec::new());
+    let body = reqwest::Body::wrap_stream(stream);
+    body
+}
+
 impl ArtifactPutRequest {
-    pub fn stream(
+    pub async fn stream(
         &mut self,
         artifact: std::fs::File,
         content_len: u64,
-    ) -> vercel_cache_helper::Result<reqwest::blocking::Response> {
-        let client = reqwest::blocking::Client::new();
+    ) -> vercel_cache_helper::Result<reqwest::Response> {
+        let client = reqwest::Client::new();
 
         let headers = self.0.get_headers("PUT", Some(content_len));
 
-        let response = client
+        let response = dbg!(client
             .put(&self.0.url)
             .headers(headers)
-            .body(artifact)
-            .send()?;
+            .body(file_to_body(artifact))
+            .send()
+            .await
+            .expect("Something went wrong!"));
 
-        Ok(response)
+        Ok(dbg!(response))
     }
 
     pub async fn buffer(
