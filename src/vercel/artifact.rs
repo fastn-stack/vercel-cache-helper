@@ -4,7 +4,7 @@ pub struct ArtifactOptions {
 }
 
 trait RequestHeaders {
-    fn get_headers(&self, method: &str, content_len: Option<usize>) -> reqwest::header::HeaderMap;
+    fn get_headers(&self, method: &str, content_len: Option<u64>) -> reqwest::header::HeaderMap;
 }
 
 // Define the base struct with common fields and behavior.
@@ -33,7 +33,7 @@ impl ArtifactBaseRequest {
 
 // Implement the trait for the base struct.
 impl RequestHeaders for ArtifactBaseRequest {
-    fn get_headers(&self, method: &str, content_len: Option<usize>) -> reqwest::header::HeaderMap {
+    fn get_headers(&self, method: &str, content_len: Option<u64>) -> reqwest::header::HeaderMap {
         let mut headers = reqwest::header::HeaderMap::new();
 
         headers.insert(
@@ -98,25 +98,20 @@ pub struct ArtifactGetRequest(pub ArtifactBaseRequest);
 pub struct ArtifactExistsRequest(pub ArtifactBaseRequest);
 
 impl ArtifactPutRequest {
-    pub async fn stream(
+    pub fn stream(
         &mut self,
-        artifact: &mut (dyn tokio::io::AsyncRead + Unpin),
-        content_len: usize,
-    ) -> vercel_cache_helper::Result<reqwest::Response> {
-        use tokio::io::AsyncReadExt;
-        let client = reqwest::Client::new();
-        let mut body: Vec<u8> = vec![];
-
-        artifact.read_to_end(&mut body).await?;
+        artifact: std::fs::File,
+        content_len: u64,
+    ) -> vercel_cache_helper::Result<reqwest::blocking::Response> {
+        let client = reqwest::blocking::Client::new();
 
         let headers = self.0.get_headers("PUT", Some(content_len));
 
         let response = client
             .put(&self.0.url)
             .headers(headers)
-            .body(body)
-            .send()
-            .await?;
+            .body(artifact)
+            .send()?;
 
         Ok(response)
     }
@@ -124,7 +119,7 @@ impl ArtifactPutRequest {
     pub async fn buffer(
         &mut self,
         artifact: &mut [u8],
-        content_len: usize,
+        content_len: u64,
     ) -> vercel_cache_helper::Result<reqwest::Response> {
         let client = reqwest::Client::new();
 

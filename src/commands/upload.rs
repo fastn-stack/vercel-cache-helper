@@ -1,5 +1,5 @@
 use indicatif::{ProgressBar, ProgressStyle};
-use std::io::{Read, Seek};
+use std::io::Seek;
 
 pub async fn upload(
     remote_client: vercel_cache_helper::vercel::remote_client::RemoteClient,
@@ -51,10 +51,10 @@ pub async fn upload(
         .seek(std::io::SeekFrom::Start(0))
         .unwrap();
 
-    let mut output_archive_buf: Vec<u8> = Vec::new();
-    let output_archive_size = output_dir_archive.read_to_end(&mut output_archive_buf)?;
+    // let mut output_archive_buf: Vec<u8> = Vec::new();
+    // let output_archive_size = output_dir_archive.read_to_end(&mut output_archive_buf)?;
 
-    println!("Output archive bytes read: {} bytes", output_archive_size);
+    // println!("Output archive bytes read: {} bytes", output_archive_size);
 
     let mut output_put_req = remote_client.put(
         vercel_cache_helper::vercel::constants::FASTN_VERCEL_REMOTE_CACHE_HASH.to_string(),
@@ -63,10 +63,10 @@ pub async fn upload(
 
     pb.set_message("Uploading artfiacts...");
 
-    let mut output_archive_cursor = std::io::Cursor::new(output_archive_buf);
+    let size = output_dir_archive.metadata()?.len();
+
     let response = output_put_req
-        .stream(&mut output_archive_cursor, output_archive_size)
-        .await?;
+        .stream(output_dir_archive, size)?;
 
     if !response.status().is_success() {
         println!("Could not upload artifacts.");
