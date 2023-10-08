@@ -6,7 +6,7 @@ pub struct ArtifactOptions {
 }
 
 trait RequestHeaders {
-    fn get_headers(&self, method: &str, content_len: Option<u64>) -> reqwest::header::HeaderMap;
+    fn get_headers(&self, method: &str, content_len: Option<usize>) -> reqwest::header::HeaderMap;
 }
 
 // Define the base struct with common fields and behavior.
@@ -35,7 +35,7 @@ impl ArtifactBaseRequest {
 
 // Implement the trait for the base struct.
 impl RequestHeaders for ArtifactBaseRequest {
-    fn get_headers(&self, method: &str, content_len: Option<u64>) -> reqwest::header::HeaderMap {
+    fn get_headers(&self, method: &str, content_len: Option<usize>) -> reqwest::header::HeaderMap {
         let mut headers = reqwest::header::HeaderMap::new();
 
         headers.insert(
@@ -109,27 +109,27 @@ impl ArtifactPutRequest {
     pub async fn stream(
         &mut self,
         artifact: std::fs::File,
-        content_len: u64,
+        content_len: usize,
     ) -> vercel_cache_helper::Result<reqwest::Response> {
         let client = reqwest::Client::new();
 
         let headers = self.0.get_headers("PUT", Some(content_len));
 
-        let response = dbg!(client
+        let response = client
             .put(&self.0.url)
             .headers(headers)
             .body(file_to_body(artifact))
             .send()
             .await
-            .expect("Something went wrong!"));
+            .expect("Something went wrong!");
 
-        Ok(dbg!(response))
+        Ok(response)
     }
 
     pub async fn buffer(
         &mut self,
         artifact: &mut [u8],
-        content_len: u64,
+        content_len: usize,
     ) -> vercel_cache_helper::Result<reqwest::Response> {
         let client = reqwest::Client::new();
 
