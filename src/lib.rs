@@ -6,6 +6,7 @@ use std::convert::From;
 pub enum Error {
     FileNotFound(String),
     InvalidInput(String),
+    WalkDirError(String),
     EnvVarNotFound(String),
     ReqwestError(String),
     Other(Box<dyn std::error::Error + Send + Sync>),
@@ -16,6 +17,7 @@ impl std::fmt::Display for Error {
         match self {
             Error::FileNotFound(message) => write!(f, "File not found: {}", message),
             Error::InvalidInput(message) => write!(f, "Invalid input: {}", message),
+            Error::WalkDirError(message) => write!(f, "Walkdir error: {}", message),
             Error::EnvVarNotFound(var_name) => {
                 write!(f, "Environment variable not found: {}", var_name)
             }
@@ -35,6 +37,12 @@ impl From<std::io::Error> for Error {
     }
 }
 
+impl From<walkdir::Error> for Error {
+    fn from(walkdir_error: walkdir::Error) -> Self {
+        Error::WalkDirError(walkdir_error.to_string())
+    }
+}
+
 impl From<std::env::VarError> for Error {
     fn from(env_error: std::env::VarError) -> Self {
         Error::EnvVarNotFound(env_error.to_string())
@@ -50,6 +58,7 @@ impl From<reqwest::Error> for Error {
 pub mod commands;
 pub mod utils;
 pub mod vercel;
+pub mod constants;
 
 pub fn get_remote_client(
     token: String,

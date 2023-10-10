@@ -39,7 +39,7 @@ pub async fn upload(
 
     let mut output_dir_archive = tempfile::tempfile()?;
 
-    vercel_cache_helper::utils::create_tar_zst_archive(
+    vercel_cache_helper::utils::create_filtered_tar_zst_archive(
         &output_dir.path().to_path_buf(),
         &output_dir_archive,
     )?;
