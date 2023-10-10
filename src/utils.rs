@@ -132,3 +132,63 @@ pub fn extract_tar_zst(file: std::fs::File, dest_path: &std::path::PathBuf) -> s
     println!("Unpacked archive in: {}", &dest_path.to_string_lossy());
     Ok(())
 }
+
+pub fn create_filtered_tar_zst_archive(
+    src_folder: &std::path::PathBuf,
+    dest_file: &std::fs::File,
+) -> vercel_cache_helper::Result<()> {
+    println!("Creating archive from: {:?}", src_folder);
+
+    if !src_folder.exists() {
+        println!("Source folder does not exist: {:?}", src_folder);
+        return Ok(());
+    }
+
+    if std::fs::read_dir(src_folder)?.next().is_none() {
+        println!("Source folder is empty: {:?}", src_folder);
+        return Ok(());
+    }
+
+    let zst_encoder =
+        match zstd::stream::write::Encoder::new(dest_file, zstd::DEFAULT_COMPRESSION_LEVEL) {
+            Ok(encoder) => encoder,
+            Err(err) => {
+                println!("Error creating Zstd encoder: {:?}", err);
+                return Err(err.into());
+            }
+        };
+
+    let mut tar_builder = tar::Builder::new(zst_encoder);
+
+    let walker = walkdir::WalkDir::new(src_folder).into_iter();
+    for entry in walker {
+        let entry = entry?;
+        let path = entry.path();
+
+        if path.starts_with(src_folder.join("-")) {
+            continue;
+        }
+
+        if let Some(extension) = path.extension() {
+            let ext_str = extension.to_string_lossy().to_lowercase();
+            if vercel_cache_helper::constants::VALID_EXTENSIONS.contains(&ext_str.as_ref()) {
+                // Calculate the relative path from src_folder to the current file
+                let relative_path = path.strip_prefix(src_folder).unwrap();
+
+                // Append the file to the archive with the relative path
+                tar_builder.append_path_with_name(path, relative_path)?;
+            }
+        }
+    }
+
+    match tar_builder.into_inner()?.finish() {
+        Ok(_) => {
+            println!("Archive created successfully.");
+            Ok(())
+        }
+        Err(err) => {
+            println!("Error closing the archive: {:?}", err);
+            Err(err.into())
+        }
+    }
+}
