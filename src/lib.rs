@@ -56,9 +56,9 @@ impl From<reqwest::Error> for Error {
 }
 
 pub mod commands;
+pub mod constants;
 pub mod utils;
 pub mod vercel;
-pub mod constants;
 
 pub fn get_remote_client(
     token: String,

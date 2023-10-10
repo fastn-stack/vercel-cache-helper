@@ -1,5 +1,5 @@
 use indicatif::{ProgressBar, ProgressStyle};
-use std::io::{Seek, Read};
+use std::io::{Read, Seek};
 
 pub async fn upload(
     remote_client: vercel_cache_helper::vercel::remote_client::RemoteClient,
@@ -64,7 +64,8 @@ pub async fn upload(
     pb.set_message("Uploading artfiacts...");
 
     let response = output_put_req
-        .buffer(&mut output_archive_buf, output_archive_size).await?;
+        .buffer(&mut output_archive_buf, output_archive_size)
+        .await?;
 
     if !response.status().is_success() {
         println!("Could not upload artifacts.");
