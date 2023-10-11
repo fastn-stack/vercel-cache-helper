@@ -135,12 +135,12 @@ impl ArtifactPutRequest {
 
         let headers = self.0.get_headers("PUT", Some(content_len));
 
-        let response = dbg!(client
+        let response = client
             .put(&self.0.url)
             .headers(headers)
             .body(artifact.to_owned())
             .send()
-            .await?);
+            .await?;
 
         Ok(response)
     }
