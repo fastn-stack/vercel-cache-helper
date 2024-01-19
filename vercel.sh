@@ -3,7 +3,7 @@
 # Function to download and install fastn
 install_fastn() {
   echo "🚀 Installing fastn..."
-  curl -fsSL https://raw.githubusercontent.com/ftd-lang/fastn/main/install.sh | sh
+  curl -fsSL https://fastn.com/install.sh | sh
   echo "✅ fastn installed successfully!"
 } 
 
